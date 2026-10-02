@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My To-Do List</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            width: 420px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1f3c88;
+            margin-bottom: 8px;
+        }
+
+        .counter {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .input-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #1f3c88;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        ul {
+            padding: 0;
+            margin-top: 25px;
+        }
+
+        li {
+            list-style: none;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f4f6f9;
+            border-radius: 6px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        li.completed .task {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .delete {
+            background: #dc3545;
+            padding: 7px 10px;
+        }
+
+        .clear {
+            width: 100%;
+            margin-top: 10px;
+            background: #555;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>📝 My To-Do List</h1>
+
+        <div class="counter" id="counter">
+            0 Tasks
+        </div>
+
+
+        <div class="input-box">
+
+            <input type="text" id="taskInput" placeholder="Enter a task..." onkeypress="handleEnter(event)">
+
+            <button onclick="addTask()">
+                Add
+            </button>
+
+        </div>
+
+
+        <ul id="taskList"></ul>
+
+
+        <div class="empty" id="emptyMessage">
+            No tasks yet.
+        </div>
+
+
+        <button class="clear" onclick="clearAll()">
+            🧹 Clear All
+        </button>
+
+    </div>
+
+
+    <script>
+
+        let tasks =
+            JSON.parse(localStorage.getItem("tasks")) || [];
+
+
+        function saveTasks() {
+
+            localStorage.setItem(
+                "tasks",
+                JSON.stringify(tasks)
+            );
+
+        }
+
+
+        function displayTasks() {
+
+            const list =
+                document.getElementById("taskList");
+
+            list.innerHTML = "";
+
+
+            tasks.forEach(function (task, index) {
+
+                const li =
+                    document.createElement("li");
+
+
+                if (task.completed) {
+
+                    li.classList.add("completed");
+
+                }
+
+
+                li.innerHTML = `
+                    <span
+                        class="task"
+                        onclick="completeTask(${index})"
+                    >
+                        ${task.text}
+                    </span>
+
+                    <button
+                        class="delete"
+                        onclick="deleteTask(${index})"
+                    >
+                        Delete
+                    </button>
+                `;
+
+
+                list.appendChild(li);
+
+            });
+
+
+            updateCounter();
+
+            updateEmptyMessage();
+
+        }
+
+
+        function addTask() {
+
+            const input =
+                document.getElementById("taskInput");
+
+            const task =
+                input.value.trim();
+
+
+            if (task === "") {
+
+                alert("Please enter a task.");
+
+                return;
+
+            }
+
+
+            tasks.push({
+
+                text: task,
+
+                completed: false
+
+            });
+
+
+            saveTasks();
+
+            displayTasks();
+
+            input.value = "";
+
+        }
+
+
+        function completeTask(index) {
+
+            tasks[index].completed =
+                !tasks[index].completed;
+
+
+            saveTasks();
+
+            displayTasks();
+
+        }
+
+
+        function deleteTask(index) {
+
+            tasks.splice(index, 1);
+
+
+            saveTasks();
+
+            displayTasks();
+
+        }
+
+
+        function clearAll() {
+
+            if (tasks.length === 0) {
+
+                return;
+
+            }
+
+
+            if (
+                confirm(
+                    "Are you sure you want to delete all tasks?"
+                )
+            ) {
+
+                tasks = [];
+
+                saveTasks();
+
+                displayTasks();
+
+            }
+
+        }
+
+
+        function updateCounter() {
+
+            const counter =
+                document.getElementById("counter");
+
+            const total =
+                tasks.length;
+
+
+            if (total === 1) {
+
+                counter.textContent =
+                    "1 Task";
+
+            } else {
+
+                counter.textContent =
+                    total + " Tasks";
+
+            }
+
+        }
+
+
+        function updateEmptyMessage() {
+
+            const message =
+                document.getElementById("emptyMessage");
+
+
+            if (tasks.length === 0) {
+
+                message.style.display = "block";
+
+            } else {
+
+                message.style.display = "none";
+
+            }
+
+        }
+
+
+        function handleEnter(event) {
+
+            if (event.key === "Enter") {
+
+                addTask();
+
+            }
+
+        }
+
+
+        displayTasks();
+
+    </script>
+
+</body>
+
+</html>
